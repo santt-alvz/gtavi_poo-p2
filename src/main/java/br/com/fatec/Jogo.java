@@ -1,5 +1,7 @@
 package br.com.fatec;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import javax.swing.JOptionPane;
@@ -20,6 +22,7 @@ public class Jogo {
                     jogar();
                     break;
                 case 2:
+                    exibirRanking();
                     break;
                 case 0:
                     JOptionPane.showMessageDialog(null, "Ate a proxima!");
@@ -69,7 +72,7 @@ public class Jogo {
             String textoClassificacao = formatarListaPilotos(classificacaoAtual, false);
 
             int escolhaNitro = Integer.parseInt(JOptionPane.showInputDialog(
-                "Corrida " + corrida + "/" + CORRIDAS + "\n" +
+                "Corrida " + corrida + "/" + CORRIDAS + ".\n" +
                 textoClassificacao + "\n" +
                 "Usar nitro? 1-Sim 2-Nao (restam " + nitrosRestantes + ")"
             ));
@@ -87,7 +90,7 @@ public class Jogo {
             List<Piloto> chegada = campeonato.disputarCorrida(gerador, jogador, usarNitro);
             String textoChegada = formatarListaPilotos(chegada, true);
 
-            JOptionPane.showMessageDialog(null, "Chegada\n" + textoChegada);
+            JOptionPane.showMessageDialog(null, "Chegada.\n" + textoChegada);
         }
 
         List<Piloto> classificacaoFinal = campeonato.getClassificacao();
@@ -111,6 +114,31 @@ public class Jogo {
         } else {
             JOptionPane.showMessageDialog(null, "Erro ao salvar a partida");
         }
+    }
+
+    private static void exibirRanking() {
+        List<Partida> partidas = PartidaDAO.listar();
+
+        Collections.sort(partidas, new Comparator<Partida>() {
+            @Override
+            public int compare(Partida a, Partida b) {
+                if (a.getPontuacao() > b.getPontuacao()) return -1;
+                if (a.getPontuacao() < b.getPontuacao()) return 1;
+                return 0;
+            }
+        });
+
+        int limite = Math.min(5, partidas.size());
+        StringBuilder sb = new StringBuilder("RANKING");
+        for (int i = 0; i < limite; i++) {
+            Partida p = partidas.get(i);
+            sb.append("\n")
+              .append(i + 1).append(". ")
+              .append(p.getJogador()).append(" - ")
+              .append(p.getPontuacao()).append(" pontos");
+        }
+
+        JOptionPane.showMessageDialog(null, sb.toString());
     }
 
     private static String formatarListaPilotos(List<Piloto> pilotos, boolean exibirTempo) {
